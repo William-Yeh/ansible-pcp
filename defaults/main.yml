@@ -1,0 +1,16 @@
+---
+
+#
+# variables needed to be defined in user's playbook
+#
+
+
+
+
+#
+# user-configurable defaults
+#
+
+#pcp_pmda: []
+
+pcp_pmcdconf_path: '/etc/pcp/pmcd/pmcd.conf'

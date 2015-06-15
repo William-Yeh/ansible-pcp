@@ -1,0 +1,43 @@
+---
+# file: tasks/use-apt.yml
+#
+# Configure pcp from Netflix APT repository.
+#
+# @see https://github.com/Netflix/vector/wiki/Installing-Performance-Co-Pilot
+#
+
+- name: install add-apt-repository and https binaries for Ansible to work
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - python-software-properties
+    - apt-transport-https
+
+- name: add APT signing key for Netflix
+  apt_key: url="https://bintray.com/user/downloadSubjectPublicKey?username=netflixoss" state=present
+
+- name: add Netflix repository
+  apt_repository: repo='deb https://dl.bintray.com/netflixoss/{{ ansible_distribution|lower }}  {{ ansible_distribution_release }}  main' state=present
+  when: ansible_distribution_release != "jessie"
+
+
+
+
+- name: install pcp
+  apt: name={{ item }}  update_cache=yes  state=present force=yes
+  with_items:
+    - pcp
+    - pcp-webapi
+
+
+- name: fix wrong "Default-Start" setting
+  lineinfile:
+    dest: "/etc/init.d/pcp"
+    regexp: '^(# Default-Start.)'
+    line: '\1 2 3 4 5'
+    backrefs: yes
+
+- name: set INIT status (SysV style)
+  shell: LC_ALL="en_US.UTF-8" update-rc.d pcp defaults
+
+- name: set INIT status and start
+  service: name=pcp state=started enabled=yes

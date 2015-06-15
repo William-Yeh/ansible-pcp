@@ -1,0 +1,36 @@
+---
+# file: tasks/main.yml
+# Top-level installer for PCP (Performance Co-Pilot).
+#
+# @see http://pcp.io/docs/installation.html
+# @see http://www.pcp.io/books/PCP_UAG/html/LE43202-PARENT.html
+#
+
+- name: delegate to APT system for installation
+  include: use-apt.yml
+  when: ansible_pkg_mgr == "apt"
+
+- name: delegate to YUM system for installation
+  include: use-yum.yml
+  when: ansible_pkg_mgr == "yum"
+
+
+
+- name: copy scripts to server
+  copy: src="../files/{{ item }}"  dest="/tmp/"  mode="a+x"
+  with_items:
+    - check-pmda.py
+
+- name: check if there're still PMDAs needed to be installed
+  shell: LC_ALL="en_US.UTF-8"  /tmp/check-pmda.py   '{{ pcp_pmcdconf_path }}'  '{{ pcp_pmda }}'
+  changed_when: false
+  register: pmda_info
+  failed_when: pmda_info.rc > 0
+
+- name: install PMDAs
+  file:
+      path: /var/lib/pcp/pmdas/{{ item }}/.NeedInstall
+      state: touch
+  with_items: (pmda_info.stdout|from_json).add
+  when: (pmda_info.stdout|from_json).ok  and  (pmda_info.stdout|from_json).changed
+  notify: restart pcp

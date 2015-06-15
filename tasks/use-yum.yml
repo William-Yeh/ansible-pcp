@@ -1,0 +1,19 @@
+---
+# file: tasks/use-yum.yml
+#
+# Configure pcp from YUM repository.  
+#
+# @see http://www.pcp.io/docs/installation.html
+#
+
+
+- name: install libselinux-python binary for Ansible to work 
+  yum: name=libselinux-python state=present
+
+
+- name: install PCP
+  yum: name=pcp  update_cache=yes  state=present
+
+- name: copy INIT script
+  command: cp /usr/share/pcp/lib/pcp  /etc/init.d/pcp
+  when: (ansible_os_family == "RedHat") and (ansible_distribution_major_version|int >= 7)
