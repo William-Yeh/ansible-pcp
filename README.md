@@ -78,35 +78,6 @@ Simple example:
 ```
 
 
-### Step 3: copy user's config file, if necessary
-
-
-More practical example:
-
-```yaml
----
-# file: complex-playbook.yml
-
-- hosts: all
-  sudo: True
-
-  roles:
-    - williamyeh.pcp
-
-  vars:
-    tdagent_plugins:
-      - fluent-plugin-watch-process
-      - fluent-plugin-multiprocess
-      - fluent-plugin-elasticsearch
-
-    # copy verbatim
-    tdagent_conf_copy: "files/td-agent.conf"
-
-    # copy through Ansible's template system
-    tdagent_conf_template: "templates/td-agent.conf.j2"
-```
-
-
 ## Dependencies
 
 None.
